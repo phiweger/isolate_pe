@@ -2,7 +2,7 @@ nextflow.enable.dsl = 2
 
 
 process assembly {
-    container 'nanozoo/spades:3.14.1--794e6a2'
+    container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     cpus = 8
 
@@ -50,6 +50,7 @@ process checkm {
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"
     errorStrategy = { task.exitStatus==14 ? 'retry' : 'terminate' }
     maxRetries = 5
+    cpus = 8
     
     input:
         tuple val(name), path(assembly)

@@ -31,7 +31,7 @@ process annotate {
         tuple(val(name), path("${name}.gff3"))
 
     """
-    prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} 
+    prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} ${genomes}
     mv anno/${name}.gff3 ${name}.gff3
     """
 

@@ -4,7 +4,7 @@ nextflow.enable.dsl = 2
 process assembly {
     container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
-    cpus = 8
+    cpus = 24
 
     input:
         tuple(val(name), path(genomes))
@@ -62,11 +62,12 @@ process checkm {
     """
     mkdir tmp
     mkdir input
-    mv ${assembly} input/assembly.fa
+    cp ${assembly} input/assembly.fa
     checkm lineage_wf --tmpdir tmp --pplacer_threads 4 -t ${task.cpus} --reduced_tree -x fa input ${name}_checkm > summary.txt
     checkm tree_qa ${name}_checkm > taxonomy.txt
     """
 }
+
 
 
 workflow {

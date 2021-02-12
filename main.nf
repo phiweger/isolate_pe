@@ -20,7 +20,7 @@ process assembly {
 
 
 process annotate {
-    container 'nanozoo/prokka:1.13.4--d6a71cb'
+    container 'nanozoo/prokka:1.14.6--773a90d'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     cpus = 8
 
@@ -28,11 +28,11 @@ process annotate {
         tuple(val(name), path(genomes))
 
     output:
-        tuple(val(name), path("${name}.gff3"))
+        tuple(val(name), path("${name}.gff"))
 
     """
     prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} ${genomes}
-    mv anno/${name}.gff3 ${name}.gff3
+    mv anno/${name}.gff ${name}.gff
     """
 
 }

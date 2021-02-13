@@ -5,6 +5,7 @@ process assembly {
     container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     cpus = 24
+    memory '40 GB'
 
     input:
         tuple(val(name), path(genomes))
@@ -13,7 +14,7 @@ process assembly {
         tuple(val(name), path("*.fasta"))
 
     """
-    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler spades --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
+    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler megahit --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
     mv assembly/contigs.fa ${name}.fasta
     """
 }
@@ -50,8 +51,9 @@ process checkm {
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"
     errorStrategy = { task.exitStatus==14 ? 'retry' : 'terminate' }
     maxRetries = 5
-    cpus = 8
-    
+    cpus = 16
+    memory '20 GB'
+
     input:
         tuple val(name), path(assembly)
     

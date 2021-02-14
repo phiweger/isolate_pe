@@ -45,7 +45,7 @@ process checkm {
     https://github.com/RVanDamme/MUFFIN/blob/master/modules/checkm.nf
     */
     container 'nanozoo/checkm:1.1.3--c79a047'
-    maxForks 1
+    //maxForks 1
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "summary.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "taxonomy.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"

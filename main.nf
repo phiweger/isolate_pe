@@ -79,7 +79,7 @@ workflow {
     else {
         reads = channel.fromPath(params.genomes, checkIfExists: true)
                        .splitCsv(header: false)
-                       .map{ row -> tuple(row[0], row[1], row[2]) }
+                       .map{ row -> tuple(row[0], [row[1], row[2]]) }
     }
 
     assembly(reads)

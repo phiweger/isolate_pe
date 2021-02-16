@@ -14,7 +14,7 @@ process assembly {
         tuple(val(name), path("*.fasta"))
 
     """
-    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler megahit --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
+    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler spades --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
     mv assembly/contigs.fa ${name}.fasta
     """
 }

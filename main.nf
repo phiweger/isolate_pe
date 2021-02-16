@@ -2,9 +2,10 @@ nextflow.enable.dsl = 2
 
 
 process assembly {
-    container 'nanozoo/spades:3.14.1--794e6a2'
+    container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
-    cpus = 8
+    cpus = 24
+    memory '40 GB'
 
     input:
         tuple(val(name), path(genomes))
@@ -13,14 +14,14 @@ process assembly {
         tuple(val(name), path("*.fasta"))
 
     """
-    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler spades --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
+    shovill --R1 ${genomes[0]} --R2 ${genomes[1]} --gsize 5M --assembler megahit --trim --outdir assembly --minlen ${params.minlen} --cpus ${task.cpus} --force
     mv assembly/contigs.fa ${name}.fasta
     """
 }
 
 
 process annotate {
-    container 'nanozoo/prokka:1.13.4--d6a71cb'
+    container 'nanozoo/prokka:1.14.6--773a90d'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     cpus = 8
 
@@ -28,11 +29,11 @@ process annotate {
         tuple(val(name), path(genomes))
 
     output:
-        tuple(val(name), path("${name}.gff3"))
+        tuple(val(name), path("${name}.gff"))
 
     """
-    prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} 
-    mv anno/${name}.gff3 ${name}.gff3
+    prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} ${genomes}
+    mv anno/${name}.gff ${name}.gff
     """
 
 }
@@ -44,13 +45,15 @@ process checkm {
     https://github.com/RVanDamme/MUFFIN/blob/master/modules/checkm.nf
     */
     container 'nanozoo/checkm:1.1.3--c79a047'
-    maxForks 1
+    //maxForks 1
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "summary.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "taxonomy.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"
     errorStrategy = { task.exitStatus==14 ? 'retry' : 'terminate' }
     maxRetries = 5
-    
+    cpus = 16
+    memory '20 GB'
+
     input:
         tuple val(name), path(assembly)
     
@@ -61,11 +64,12 @@ process checkm {
     """
     mkdir tmp
     mkdir input
-    mv ${assembly} input/assembly.fa
+    cp ${assembly} input/assembly.fa
     checkm lineage_wf --tmpdir tmp --pplacer_threads 4 -t ${task.cpus} --reduced_tree -x fa input ${name}_checkm > summary.txt
     checkm tree_qa ${name}_checkm > taxonomy.txt
     """
 }
+
 
 
 workflow {

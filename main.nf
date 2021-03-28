@@ -2,10 +2,10 @@ nextflow.enable.dsl = 2
 
 
 process assembly {
-    container 'nanozoo/shovill:1.1.0--1dafaa5'
+    // container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
-    cpus = 8
-    memory '14 GB'
+    // cpus = 8
+    // memory '14 GB'
 
     input:
         tuple(val(name), path(genomes))
@@ -21,9 +21,9 @@ process assembly {
 
 
 process annotate {
-    container 'nanozoo/prokka:1.14.6--773a90d'
+    // container 'nanozoo/prokka:1.14.6--773a90d'
     publishDir "${params.results}", mode: 'copy', overwrite: true
-    cpus = 8
+    // cpus = 8
 
     input:
         tuple(val(name), path(genomes))
@@ -46,15 +46,15 @@ process checkm {
 
     https://github.com/RVanDamme/MUFFIN/blob/master/modules/checkm.nf
     */
-    container 'nanozoo/checkm:1.1.3--c79a047'
+    // container 'nanozoo/checkm:1.1.3--c79a047'
     //maxForks 1
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "summary.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "taxonomy.txt"
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"
     errorStrategy = { task.exitStatus==14 ? 'retry' : 'terminate' }
     maxRetries = 5
-    cpus = 16
-    memory '20 GB'
+    // cpus = 16
+    // memory '20 GB'
 
     input:
         tuple val(name), path(assembly)
@@ -107,8 +107,8 @@ workflow {
         checkm(assembly.out)    
     }
     
-    db = channel.fromPath(params.db, checkIfExists: true)
-    concern(annotate.out.proteins.combine(db))
+    // db = channel.fromPath(params.db, checkIfExists: true)
+    // concern(annotate.out.proteins.combine(db))
     // TODO: review(concern.out)
 
 }

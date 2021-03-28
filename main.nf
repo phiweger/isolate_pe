@@ -3,6 +3,7 @@ nextflow.enable.dsl = 2
 
 process assembly {
     // container 'nanozoo/shovill:1.1.0--1dafaa5'
+    label 'shovill'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     // cpus = 8
     // memory '14 GB'
@@ -22,6 +23,7 @@ process assembly {
 
 process annotate {
     // container 'nanozoo/prokka:1.14.6--773a90d'
+    label 'prokka'
     publishDir "${params.results}", mode: 'copy', overwrite: true
     // cpus = 8
 
@@ -53,6 +55,7 @@ process checkm {
     publishDir "${params.results}/checkm/${name}/", mode: 'copy', pattern: "*_checkm"
     errorStrategy = { task.exitStatus==14 ? 'retry' : 'terminate' }
     maxRetries = 5
+    label 'checkm'
     // cpus = 16
     // memory '20 GB'
 

@@ -4,8 +4,8 @@ nextflow.enable.dsl = 2
 process assembly {
     container 'nanozoo/shovill:1.1.0--1dafaa5'
     publishDir "${params.results}", mode: 'copy', overwrite: true
-    cpus = 24
-    memory '40 GB'
+    cpus = 8
+    memory '14 GB'
 
     input:
         tuple(val(name), path(genomes))
@@ -30,13 +30,15 @@ process annotate {
 
     output:
         tuple(val(name), path("${name}.gff"))
+        tuple(val(name), path("${name}.faa"), emit: 'proteins')
 
     """
     prokka --mincontiglen ${params.minlen} --cpus ${task.cpus} --outdir anno --prefix ${name} ${genomes}
-    mv anno/${name}.gff ${name}.gff
+    cp anno/${name}.gff ${name}.gff
+    cp anno/${name}.faa ${name}.faa
     """
-
 }
+
 
 process checkm {
     /*
@@ -71,10 +73,26 @@ process checkm {
 }
 
 
+process concern {
+    container 'nanozoo/mmseqs2:11.e1a1c--55acb62'
+    publishDir "${params.results}", mode: 'copy', overwrite: true
+    // TODO: Create db beforehand
+    
+    input:
+        tuple(val(name), path(proteins), path(db))
+
+    output:
+        tuple(val(name), path('aln.m8'))
+
+    """
+    mmseqs easy-search --max-accept 1 --min-seq-id 0.8 -c 0.5 ${proteins} ${db} aln.m8 tmp
+    """
+}
+
 
 workflow {
     if (params.sra) {
-        reads = channel.fromSRA("${params.sra}")
+        reads = channel.fromSRA(params.sra)
     }
     else {
         reads = channel.fromPath(params.genomes, checkIfExists: true)
@@ -84,5 +102,13 @@ workflow {
 
     assembly(reads)
     annotate(assembly.out)
-    checkm(assembly.out)
+
+    if (params.qc) {
+        checkm(assembly.out)    
+    }
+    
+    db = channel.fromPath(params.db, checkIfExists: true)
+    concern(annotate.out.proteins.combine(db))
+    // TODO: review(concern.out)
+
 }
